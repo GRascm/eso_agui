@@ -1,0 +1,42 @@
+<GuiXml>
+    <Controls>
+        <Control name="AGUI.MainMenuEntryTemplate" inherits="ZO_GamepadSelectableItemRadialMenuEntryTemplate" virtual="true">
+            <OnInitialized>
+                AGUI.MainMenuEntryTemplate_OnInitialized(self)
+            </OnInitialized>
+            <Controls>
+                <Label name="$(parent)Label" font="ZoFontGamepad54" horizontalAlignment="CENTER">
+                    <Anchor point="TOP" relativeto="$(parent)Icon" relativePoint="BOTTOM" offsetY="5"/>
+                </Label>
+            </Controls>
+        </Control>
+
+        <TopLevelControl name="AGUI.MainMenuTopLevel" inherits="ZO_GamepadGrid_NavQuadrant_1_2_3_Anchors">
+            <OnInitialized>
+                AGUI.MainMenuTopLevel_Initialize(self)
+            </OnInitialized>
+
+            <Controls>
+                <Control name="$(parent)MainRadial" inherits="ZO_RadialMenuHUDSize_Gamepad" scale="1.4">
+                    <Anchor point="CENTER" offsetY="80" />
+                    <Controls>
+                        <Texture name="$(parent)Sparkle" inherits="ZO_SparkleTemplate" >
+                            <Dimensions x="128" y="128" />
+                            <Anchor point="CENTER"/>
+                        </Texture>
+                    </Controls>
+                </Control>
+
+                <Control name="$(parent)SubRadial" inherits="ZO_RadialMenuHUDSize_Gamepad" scale="0.7">
+                    <Anchor point="CENTER" offsetY="80" />
+                    <Controls>
+                        <Texture name="$(parent)Sparkle" inherits="ZO_SparkleTemplate" >
+                            <Dimensions x="128" y="128" />
+                            <Anchor point="CENTER"/>
+                        </Texture>
+                    </Controls>
+                </Control>
+            </Controls>
+        </TopLevelControl>
+    </Controls>
+</GuiXml>
