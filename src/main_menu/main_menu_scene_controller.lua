@@ -8,6 +8,14 @@ local function SetupMainMenuScene(sceneName)
     return scene
 end
 
+local MENU_MAIN_ENTRIES =
+{
+    CROWN_STORE = 1,
+    NOTIFICATIONS = 3,
+    INVENTORY = 5,
+    OPTIONS = 14,
+}
+
 
 AGUI.MainMenuSceneController = AGUI.SceneControllerBase:Subclass()
 
@@ -30,7 +38,17 @@ end
 function AGUI.MainMenuSceneController:PrepareEntries()
     local entries = {}
     for i, entry in ipairs(ZO_MENU_ENTRIES) do
-        entries[i] = entry.data
+        if entry.id ~= MENU_MAIN_ENTRIES.NOTIFICATIONS then -- skip notifications, because it has been moved to KeybindButtonGroupDescriptor
+            entries[#entries + 1] = entry.data
+            if entry.id == MENU_MAIN_ENTRIES.CROWN_STORE or entry.id == MENU_MAIN_ENTRIES.INVENTORY or entry.id == MENU_MAIN_ENTRIES.OPTIONS then
+                entries[#entries].proxyRequired = true
+                if entry.subMenu then
+                    entries[#entries].proxySubmenu = entry.subMenu
+                else
+                    entries[#entries].proxySubmenu = { [1] = entry }
+                end
+            end
+        end
     end
     return entries
 end
@@ -90,35 +108,7 @@ function AGUI.MainMenuSceneController:MakeKeybindButtonGroupDescriptor()
             name = GetString(SI_GAMEPAD_SELECT_OPTION),
             keybind = "UI_SHORTCUT_PRIMARY",
             order = -500,
-            callback = function()
-                local entry = self.activeMenu.selectedEntry
-                if entry ~= nil then
-                    local menuEntryData = self.activeEntries[entry.data.slot]
-                    if menuEntryData.scene ~= nil then
-                        SCENE_MANAGER:Push(menuEntryData.scene)
-                        return
-                    end
-
-                    if menuEntryData.activatedCallback ~= nil then
-                        menuEntryData.activatedCallback()
-                        return
-                    end
-
-                    if menuEntryData.subMenu ~= nil then
-                        if menuEntryData.name ~= GetString(SI_GAMEPAD_MAIN_MENU_CROWN_STORE_CATEGORY) then
-                            self:PopulateMenu(self.subMenu, menuEntryData.subMenu)
-                            self:ShowMenu(self.subMenu)
-                        else
-                            MAIN_MENU_GAMEPAD.mainList:SetFirstIndexSelected(ZO_PARAMETRIC_MOVEMENT_TYPES.JUMP_PREVIOUS)
-                            MAIN_MENU_GAMEPAD:SwitchToSelectedScene(MAIN_MENU_GAMEPAD.mainList)
-                        end
-                        return
-                    end
-
-                    SCENE_MANAGER:HideCurrentScene()
-                    d("Unknown menu entry")
-                end
-            end
+            callback = function() self:ExecuteSelectedMenuEntry() end
         },
         {
             alignment = KEYBIND_STRIP_ALIGN_LEFT,
@@ -136,6 +126,43 @@ function AGUI.MainMenuSceneController:MakeKeybindButtonGroupDescriptor()
             end,
         }
     }
+end
+
+function AGUI.MainMenuSceneController:ExecuteSelectedMenuEntry()
+    local entry = self.activeMenu.selectedEntry
+    if entry ~= nil then
+        local menuEntryData = self.activeEntries[entry.data.slot]
+
+        if menuEntryData.proxyRequired then
+            self:ShowProxyDialog(menuEntryData)
+            return
+        end
+
+        if menuEntryData.scene ~= nil then
+            SCENE_MANAGER:Push(menuEntryData.scene)
+            return
+        end
+
+        if menuEntryData.activatedCallback ~= nil then
+            menuEntryData.activatedCallback()
+            return
+        end
+
+        if menuEntryData.subMenu ~= nil then
+            self:PopulateMenu(self.subMenu, menuEntryData.subMenu)
+            self:ShowMenu(self.subMenu)
+            return
+        end
+
+        SCENE_MANAGER:HideCurrentScene()
+        d("Unknown menu entry")
+    end
+end
+
+function AGUI.MainMenuSceneController:ShowProxyDialog(myEntry)
+    MAIN_MENU_GAMEPAD.mainList:SetFirstIndexSelected()
+    MAIN_MENU_GAMEPAD.mainList:GetTargetData().subMenu = myEntry.proxySubmenu
+    MAIN_MENU_GAMEPAD:SwitchToSelectedScene(MAIN_MENU_GAMEPAD.mainList)
 end
 
 function AGUI.MainMenuSceneController:OnShowing()
