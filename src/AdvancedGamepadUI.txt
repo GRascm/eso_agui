@@ -1,0 +1,12 @@
+## Title: Advanced Gamepad UI
+## Description: Addon improves standart gamepad ui in many aspects
+## Author: GRascm (Грас)
+## APIVersion: 100033
+## Version: 0.1.0
+
+main.lua
+common/advanced_radial_menu.lua
+common/scene_controller_base.lua
+main_menu/main_menu_scene_controller.lua
+main_menu/init.lua
+main_menu/controls.xml
